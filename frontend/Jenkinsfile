@@ -9,13 +9,13 @@ pipeline {
         nodejs 'node18'   // لازم يكون متضاف في Jenkins Tools
     }
 
-    stages {
+    // stages {
 
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
+    //     stage('Checkout') {
+    //         steps {
+    //             checkout scm
+    //         }
+    //     }
 
         stage('Install Dependencies') {
             steps {
