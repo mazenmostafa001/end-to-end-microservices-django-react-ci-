@@ -6,7 +6,7 @@ pipeline {
     }
 
     tools {
-        nodejs 'node18'   // لازم تكون متضافة في Jenkins Tools
+        nodejs 'node18'   // لازم يكون متضاف في Jenkins Tools
     }
 
     stages {
@@ -19,41 +19,49 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                dir('frontend') {
+                    sh 'npm install'
+                }
             }
         }
 
         stage('Unit Tests & Coverage (Jest)') {
             steps {
-                sh 'npm test -- --coverage --watchAll=false'
+                dir('frontend') {
+                    sh 'npm test -- --coverage --watchAll=false'
+                }
             }
             post {
                 always {
-                    archiveArtifacts artifacts: 'coverage/**', fingerprint: true
+                    dir('frontend') {
+                        archiveArtifacts artifacts: '**/coverage/**', fingerprint: true
+                    }
                 }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh """
-                    sonar-scanner \
-                      -Dsonar.projectKey=frontend-react \
-                      -Dsonar.projectName=Frontend React \
-                      -Dsonar.sources=src \
-                      -Dsonar.tests=src \
-                      -Dsonar.test.inclusions=src/**/*.test.js \
-                      -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-                      -Dsonar.sourceEncoding=UTF-8
-                    """
+                dir('frontend') {
+                    withSonarQubeEnv('SonarQube') {   // الاسم مطابق للسيرفر في Jenkins
+                        sh """
+                        sonar-scanner \
+                          -Dsonar.projectKey=frontend-react \
+                          -Dsonar.projectName=Frontend-React \
+                          -Dsonar.sources=src \
+                          -Dsonar.tests=src \
+                          -Dsonar.test.inclusions=src/**/*.test.js \
+                          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+                          -Dsonar.sourceEncoding=UTF-8
+                        """
+                    }
                 }
             }
         }
 
         stage('Quality Gate') {
             steps {
-                timeout(time: 2, unit: 'MINUTES') {
+                timeout(time: 5, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
@@ -61,7 +69,9 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'npm run build'
+                dir('frontend') {
+                    sh 'npm run build'
+                }
             }
         }
     }
