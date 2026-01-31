@@ -2,14 +2,9 @@ pipeline {
     agent any
 
     environment {
-        NODE_VERSION    = "18" // النسخة اللي المشروع محتاجها
+        NODE_VERSION    = "18"
         DOCKER_IMAGE    = "mazenmostafa429/gig-router-frontend"
         DOCKER_REGISTRY = "https://index.docker.io/v1/"
-    }
-
-    tools {
-        // اختياري لو عندك أدوات مثبتة على Jenkins
-        // nodejs 'NodeJS18'
     }
 
     stages {
@@ -22,7 +17,6 @@ pipeline {
 
         stage('Setup Node') {
             steps {
-                // لو عندك nvm مثبت على السيرفر
                 sh """
                 echo "Setting Node version ${NODE_VERSION}"
                 nvm install ${NODE_VERSION}
