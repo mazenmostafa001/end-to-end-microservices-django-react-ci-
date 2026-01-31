@@ -17,28 +17,41 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo "📦 Installing npm dependencies..."
-                sh 'npm ci'  // أفضل من npm install للبناء CI
+                dir('frontend') {  // الانتقال لمجلد frontend
+                    sh 'npm ci'
+                }
             }
         }
 
         stage('Run Tests') {
             steps {
-                echo "🧪 Running tests..."
-                sh 'npm test -- --watchAll=false' // run tests once
+                echo "🧪 Running frontend tests..."
+                dir('frontend') {
+                    sh 'CI=true npm test -- --watchAll=false'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 echo "🏗 Building Docker image..."
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                dir('frontend') {
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                }
+            }
+        }
+
+        stage('Clean Up') {
+            steps {
+                echo "🧹 Cleaning up Docker dangling images..."
+                sh "docker system prune -f"
             }
         }
     }
 
     post {
         success {
-            echo "✅ Pipeline completed successfully!"
+            echo "✅ Frontend build and tests completed successfully!"
         }
         failure {
             echo "❌ Pipeline failed."
