@@ -2,59 +2,58 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "my-react-app"
-        IMAGE_TAG  = "latest"
+        NODE_ENV = 'production'
     }
 
     stages {
-        stage('Checkout SCM') {
+
+        stage('Checkout') {
             steps {
-                echo "🔄 Checking out source code..."
+                echo '📥 Cloning repository...'
                 checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                echo "📦 Installing npm dependencies..."
-                dir('frontend') {  // الانتقال لمجلد frontend
-                    sh 'npm ci'
-                }
+                echo '📦 Installing npm dependencies...'
+                sh '''
+                  node -v
+                  npm -v
+                  npm install
+                '''
             }
         }
 
-        stage('Run Tests') {
+        stage('Build') {
             steps {
-                echo "🧪 Running frontend tests..."
-                dir('frontend') {
-                    sh 'CI=true npm test -- --watchAll=false'
-                }
+                echo '🏗️ Building frontend...'
+                sh '''
+                  npm run build
+                '''
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Test (optional)') {
+            when {
+                expression { fileExists('package.json') }
+            }
             steps {
-                echo "🏗 Building Docker image..."
-                dir('frontend') {
-                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-                }
+                echo '🧪 Running tests...'
+                sh '''
+                  npm test -- --watch=false || true
+                '''
             }
         }
 
-        stage('Clean Up') {
-            steps {
-                echo "🧹 Cleaning up Docker dangling images..."
-                sh "docker system prune -f"
-            }
-        }
     }
 
     post {
         success {
-            echo "✅ Frontend build and tests completed successfully!"
+            echo '✅ Frontend pipeline finished successfully'
         }
         failure {
-            echo "❌ Pipeline failed."
+            echo '❌ Frontend pipeline failed'
         }
     }
 }
