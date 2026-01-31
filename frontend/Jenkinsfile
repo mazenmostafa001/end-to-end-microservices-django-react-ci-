@@ -11,6 +11,17 @@ pipeline {
 
     stages {
 
+        stage('Checkout') {
+            steps {
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/mazenmostafa001/end-to-end-microservices-django-react-ci-.git'
+                    ]]
+                ])
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 dir('frontend') {
@@ -37,7 +48,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir('frontend') {
-                    withSonarQubeEnv('SonarQube') {
+                    withSonarQubeEnv('SonarQube') {   // الاسم مطابق للسيرفر في Jenkins
                         sh """
                         sonar-scanner \
                           -Dsonar.projectKey=frontend-react \
