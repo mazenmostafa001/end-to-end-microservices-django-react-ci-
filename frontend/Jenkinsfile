@@ -19,8 +19,8 @@ pipeline {
             steps {
                 sh """
                 echo "Setting Node version ${NODE_VERSION}"
-                nvm install ${NODE_VERSION}
-                nvm use ${NODE_VERSION}
+                npm install ${NODE_VERSION}
+                npm use ${NODE_VERSION}
                 node -v
                 npm -v
                 """
